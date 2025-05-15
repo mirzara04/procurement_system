@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Purchase Order Cancelled</h1>
+    
+    <p>
+      Purchase order #<%= @purchase_order.po_number %> has been cancelled by <%= @cancelled_by.name %>.
+    </p>
+
+    <h2>Purchase Order Details:</h2>
+    <ul>
+      <li><strong>Vendor:</strong> <%= @purchase_order.vendor.name %></li>
+      <li><strong>Total Amount:</strong> <%= number_to_currency(@purchase_order.total_amount) %></li>
+      <li><strong>Expected Delivery:</strong> <%= @purchase_order.expected_delivery_date.strftime("%B %d, %Y") %></li>
+      <li><strong>Cancelled At:</strong> <%= @purchase_order.cancelled_at.strftime("%B %d, %Y %H:%M") %></li>
+    </ul>
+
+    <p>
+      You can view the cancelled purchase order by clicking the link below:
+    </p>
+
+    <p>
+      <%= link_to 'View Purchase Order', @url %>
+    </p>
+
+    <p>
+      <small>This is an automated message. Please do not reply to this email.</small>
+    </p>
+  </body>
+</html> 

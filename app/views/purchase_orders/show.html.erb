@@ -1,0 +1,168 @@
+<%% content_for :title, "Purchase Order ##{@purchase_order.po_number}" %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Purchase Order Details</h5>
+        <div>
+          <%% if policy(@purchase_order).edit? %>
+            <%%= link_to 'Edit', edit_purchase_order_path(@purchase_order), class: 'btn btn-primary' %>
+          <%% end %>
+          <%% if policy(@purchase_order).approve? && @purchase_order.pending_approval? %>
+            <%%= button_to 'Approve', approve_purchase_order_path(@purchase_order),
+                method: :patch,
+                class: 'btn btn-success' %>
+          <%% end %>
+          <%% if policy(@purchase_order).cancel? && @purchase_order.can_be_cancelled? %>
+            <%%= button_to 'Cancel Order', cancel_purchase_order_path(@purchase_order),
+                method: :patch,
+                class: 'btn btn-danger',
+                data: { confirm: 'Are you sure you want to cancel this order?' } %>
+          <%% end %>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <dl class="row">
+              <dt class="col-sm-4">PO Number</dt>
+              <dd class="col-sm-8"><%%= @purchase_order.po_number %></dd>
+
+              <dt class="col-sm-4">Status</dt>
+              <dd class="col-sm-8">
+                <span class="badge bg-<%%= po_status_color(@purchase_order.status) %>">
+                  <%%= @purchase_order.status.titleize %>
+                </span>
+              </dd>
+
+              <dt class="col-sm-4">Created By</dt>
+              <dd class="col-sm-8"><%%= @purchase_order.created_by.name %></dd>
+
+              <dt class="col-sm-4">Created At</dt>
+              <dd class="col-sm-8"><%%= @purchase_order.created_at.strftime("%b %d, %Y %H:%M") %></dd>
+            </dl>
+          </div>
+          <div class="col-md-6">
+            <dl class="row">
+              <dt class="col-sm-4">Expected Delivery</dt>
+              <dd class="col-sm-8"><%%= @purchase_order.expected_delivery_date.strftime("%b %d, %Y") %></dd>
+
+              <dt class="col-sm-4">Payment Terms</dt>
+              <dd class="col-sm-8"><%%= @purchase_order.payment_terms %></dd>
+
+              <dt class="col-sm-4">Currency</dt>
+              <dd class="col-sm-8"><%%= @purchase_order.currency %></dd>
+
+              <%% if @purchase_order.approved_at.present? %>
+                <dt class="col-sm-4">Approved By</dt>
+                <dd class="col-sm-8"><%%= @purchase_order.approved_by.name %></dd>
+              <%% end %>
+            </dl>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h6>Vendor Information</h6>
+          <div class="row">
+            <div class="col-md-6">
+              <dl class="row">
+                <dt class="col-sm-4">Name</dt>
+                <dd class="col-sm-8">
+                  <%%= link_to @purchase_order.vendor.name, vendor_path(@purchase_order.vendor) %>
+                </dd>
+
+                <dt class="col-sm-4">Email</dt>
+                <dd class="col-sm-8"><%%= @purchase_order.vendor.email %></dd>
+
+                <dt class="col-sm-4">Phone</dt>
+                <dd class="col-sm-8"><%%= @purchase_order.vendor.phone %></dd>
+              </dl>
+            </div>
+            <div class="col-md-6">
+              <h6>Shipping Address</h6>
+              <p class="mb-0"><%%= simple_format @purchase_order.shipping_address %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <h6>Items</h6>
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>Product/Service</th>
+                  <th>Description</th>
+                  <th class="text-center">Quantity</th>
+                  <th class="text-end">Unit Price</th>
+                  <th class="text-end">Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <%% @purchase_order.purchase_order_items.each do |item| %>
+                  <tr>
+                    <td><%%= item.product_name %></td>
+                    <td><%%= item.description %></td>
+                    <td class="text-center"><%%= item.quantity %></td>
+                    <td class="text-end"><%%= number_to_currency(item.unit_price) %></td>
+                    <td class="text-end"><%%= number_to_currency(item.total_amount) %></td>
+                  </tr>
+                <%% end %>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-end"><strong>Total Amount:</strong></td>
+                  <td class="text-end"><strong><%%= number_to_currency(@purchase_order.total_amount) %></strong></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        <%% if @purchase_order.notes.present? %>
+          <div class="mt-4">
+            <h6>Notes</h6>
+            <p class="mb-0"><%%= simple_format @purchase_order.notes %></p>
+          </div>
+        <%% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Timeline</h5>
+      </div>
+      <div class="card-body p-0">
+        <div class="list-group list-group-flush">
+          <%% @purchase_order.versions.reverse.each do |version| %>
+            <div class="list-group-item">
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1"><%%= po_version_event(version) %></h6>
+                <small><%%= version.created_at.strftime("%b %d, %Y %H:%M") %></small>
+              </div>
+              <p class="mb-1"><%%= po_version_details(version) %></p>
+              <small>By <%%= User.find_by(id: version.whodunnit)&.name || 'System' %></small>
+            </div>
+          <%% end %>
+        </div>
+      </div>
+    </div>
+
+    <%% if policy(@purchase_order).rate? && @purchase_order.delivered? %>
+      <div class="card">
+        <div class="card-header">
+          <h5 class="card-title mb-0">Rate Vendor Performance</h5>
+        </div>
+        <div class="card-body">
+          <%%= render 'vendor_ratings/form',
+              rating: @purchase_order.vendor_ratings.build,
+              vendor: @purchase_order.vendor,
+              purchase_order: @purchase_order %>
+        </div>
+      </div>
+    <%% end %>
+  </div>
+</div> 

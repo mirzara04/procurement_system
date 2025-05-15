@@ -1,0 +1,104 @@
+<%% content_for :title, 'Purchase Orders' %>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Purchase Orders</h5>
+    <%% if policy(PurchaseOrder.new).create? %>
+      <%%= link_to 'New Purchase Order', new_purchase_order_path, class: 'btn btn-primary' %>
+    <%% end %>
+  </div>
+
+  <div class="card-body">
+    <%%= search_form_for @q, class: 'mb-4' do |f| %>
+      <div class="row g-3">
+        <div class="col-md-2">
+          <%%= f.label :po_number_cont, 'PO Number', class: 'form-label' %>
+          <%%= f.search_field :po_number_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-3">
+          <%%= f.label :vendor_name_cont, 'Vendor', class: 'form-label' %>
+          <%%= f.search_field :vendor_name_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-2">
+          <%%= f.label :status_eq, 'Status', class: 'form-label' %>
+          <%%= f.select :status_eq, 
+              PurchaseOrder.statuses.map { |k, v| [k.titleize, v] },
+              { include_blank: 'All' }, 
+              class: 'form-select' %>
+        </div>
+        <div class="col-md-2">
+          <%%= f.label :created_at_gteq, 'Date From', class: 'form-label' %>
+          <%%= f.date_field :created_at_gteq, class: 'form-control' %>
+        </div>
+        <div class="col-md-2">
+          <%%= f.label :created_at_lteq, 'Date To', class: 'form-label' %>
+          <%%= f.date_field :created_at_lteq, class: 'form-control' %>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+          <%%= f.submit 'Search', class: 'btn btn-primary w-100' %>
+        </div>
+      </div>
+    <%% end %>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th><%%= sort_link(@q, :po_number, 'PO Number') %></th>
+            <th><%%= sort_link(@q, :vendor_name, 'Vendor') %></th>
+            <th><%%= sort_link(@q, :total_amount, 'Amount') %></th>
+            <th><%%= sort_link(@q, :status, 'Status') %></th>
+            <th><%%= sort_link(@q, :expected_delivery_date, 'Expected Delivery') %></th>
+            <th><%%= sort_link(@q, :created_at, 'Created') %></th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <%% @purchase_orders.each do |po| %>
+            <tr>
+              <td><%%= link_to po.po_number, purchase_order_path(po) %></td>
+              <td><%%= link_to po.vendor.name, vendor_path(po.vendor) %></td>
+              <td><%%= number_to_currency(po.total_amount) %></td>
+              <td>
+                <span class="badge bg-<%%= po_status_color(po.status) %>">
+                  <%%= po.status.titleize %>
+                </span>
+              </td>
+              <td><%%= po.expected_delivery_date&.strftime("%b %d, %Y") %></td>
+              <td><%%= po.created_at.strftime("%b %d, %Y") %></td>
+              <td>
+                <div class="btn-group">
+                  <%%= link_to 'View', purchase_order_path(po), class: 'btn btn-sm btn-info' %>
+                  <%% if policy(po).edit? %>
+                    <%%= link_to 'Edit', edit_purchase_order_path(po), class: 'btn btn-sm btn-primary' %>
+                  <%% end %>
+                  <%% if policy(po).approve? && po.pending_approval? %>
+                    <%%= button_to 'Approve', approve_purchase_order_path(po),
+                        method: :patch,
+                        class: 'btn btn-sm btn-success' %>
+                  <%% end %>
+                </div>
+              </td>
+            </tr>
+          <%% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-center mt-3">
+      <%%= paginate @purchase_orders %>
+    </div>
+  </div>
+</div>
+
+<%% content_for :javascript do %>
+  <script>
+    document.addEventListener('turbo:load', function() {
+      // Add datepicker if needed
+      const dateFields = document.querySelectorAll('input[type="date"]');
+      dateFields.forEach(field => {
+        // Initialize datepicker if you're using one
+      });
+    });
+  </script>
+<%% end %> 

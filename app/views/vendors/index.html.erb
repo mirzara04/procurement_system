@@ -1,0 +1,107 @@
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Vendors</h5>
+    <% if policy(Vendor.new).create? %>
+      <%= link_to 'New Vendor', new_vendor_path, class: 'btn btn-primary' %>
+    <% end %>
+  </div>
+
+  <div class="card-body">
+    <%= search_form_for @q, class: 'mb-4' do |f| %>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <%= f.label :name_cont, 'Name Contains', class: 'form-label' %>
+          <%= f.search_field :name_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :email_cont, 'Email Contains', class: 'form-label' %>
+          <%= f.search_field :email_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :status_eq, 'Status', class: 'form-label' %>
+          <%= f.select :status_eq, Vendor.statuses.map { |k, v| [k.titleize, v] },
+                      { include_blank: 'All' }, class: 'form-select' %>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :tax_number_cont, 'Tax Number', class: 'form-label' %>
+          <%= f.search_field :tax_number_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <%= f.submit 'Search', class: 'btn btn-primary me-2' %>
+          <%= link_to 'Clear', vendors_path, class: 'btn btn-secondary' %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th><%= sort_link(@q, :name, 'Name') %></th>
+            <th><%= sort_link(@q, :email, 'Email') %></th>
+            <th><%= sort_link(@q, :phone, 'Phone') %></th>
+            <th><%= sort_link(@q, :status, 'Status') %></th>
+            <th>Rating</th>
+            <th>Orders</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @vendors.each do |vendor| %>
+            <tr>
+              <td><%= link_to vendor.name, vendor_path(vendor) %></td>
+              <td><%= vendor.email %></td>
+              <td><%= vendor.phone %></td>
+              <td>
+                <span class="badge bg-<%= vendor_status_color(vendor.status) %>">
+                  <%= vendor.status.titleize %>
+                </span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center">
+                  <%= render_star_rating(vendor.average_rating) %>
+                  <small class="ms-1 text-muted">
+                    (<%= vendor.vendor_ratings.count %>)
+                  </small>
+                </div>
+              </td>
+              <td>
+                <%= vendor.purchase_orders.count %>
+                (<%= number_to_currency(vendor.total_purchase_orders_amount) %>)
+              </td>
+              <td>
+                <div class="btn-group">
+                  <%= link_to 'View', vendor_path(vendor), class: 'btn btn-sm btn-info' %>
+                  <% if policy(vendor).edit? %>
+                    <%= link_to 'Edit', edit_vendor_path(vendor), class: 'btn btn-sm btn-primary' %>
+                  <% end %>
+                  <% if policy(vendor).destroy? %>
+                    <%= button_to 'Delete', vendor_path(vendor), 
+                        method: :delete, 
+                        class: 'btn btn-sm btn-danger',
+                        data: { confirm: 'Are you sure?' } %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-center">
+      <%= paginate @vendors %>
+    </div>
+  </div>
+</div>
+
+<% content_for :head do %>
+  <style>
+    .star-rating {
+      color: #ffc107;
+    }
+    .star-empty {
+      color: #e2e2e2;
+    }
+  </style>
+<% end %> 

@@ -1,0 +1,120 @@
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-white bg-primary">
+      <div class="card-body">
+        <h5 class="card-title">Total Spend</h5>
+        <h2 class="card-text"><%= number_to_currency(@total_spend) %></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-white bg-success">
+      <div class="card-body">
+        <h5 class="card-title">Active Vendors</h5>
+        <h2 class="card-text"><%= @vendor_count %></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-white bg-warning">
+      <div class="card-body">
+        <h5 class="card-title">Pending Orders</h5>
+        <h2 class="card-text"><%= @pending_orders.count %></h2>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-white bg-info">
+      <div class="card-body">
+        <h5 class="card-title">Orders This Month</h5>
+        <h2 class="card-text"><%= @recent_orders.count %></h2>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Spending</h5>
+      </div>
+      <div class="card-body">
+        <%= line_chart @monthly_spending, 
+            min: 0, 
+            thousands: ",",
+            prefix: "$",
+            colors: ["#0d6efd"] %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Top Vendors</h5>
+      </div>
+      <div class="card-body">
+        <div class="list-group">
+          <% @top_vendors.each do |vendor| %>
+            <%= link_to vendor_path(vendor), class: "list-group-item list-group-item-action" do %>
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1"><%= vendor.name %></h6>
+                <small><%= number_to_currency(vendor.total_spend) %></small>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Recent Purchase Orders</h5>
+        <%= link_to 'View All', purchase_orders_path, class: 'btn btn-sm btn-primary' %>
+      </div>
+      <div class="card-body">
+        <div class="list-group">
+          <% @recent_orders.each do |order| %>
+            <%= link_to purchase_order_path(order), class: "list-group-item list-group-item-action" do %>
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1"><%= order.po_number %></h6>
+                <small><%= order.created_at.strftime("%b %d, %Y") %></small>
+              </div>
+              <p class="mb-1"><%= order.vendor.name %></p>
+              <small><%= number_to_currency(order.total_amount) %> - <%= order.status.titleize %></small>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Pending Approvals</h5>
+        <%= link_to 'View All', pending_approval_purchase_orders_path, class: 'btn btn-sm btn-primary' %>
+      </div>
+      <div class="card-body">
+        <div class="list-group">
+          <% @pending_orders.each do |order| %>
+            <%= link_to purchase_order_path(order), class: "list-group-item list-group-item-action" do %>
+              <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1"><%= order.po_number %></h6>
+                <small><%= order.created_at.strftime("%b %d, %Y") %></small>
+              </div>
+              <p class="mb-1"><%= order.vendor.name %></p>
+              <small>
+                Created by: <%= order.user.name %> - 
+                Amount: <%= number_to_currency(order.total_amount) %>
+              </small>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

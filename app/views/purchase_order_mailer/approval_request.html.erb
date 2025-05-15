@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Purchase Order Requires Approval</h1>
+    
+    <p>
+      A new purchase order (#<%= @purchase_order.po_number %>) has been submitted for approval by <%= @user.name %>.
+    </p>
+
+    <h2>Purchase Order Details:</h2>
+    <ul>
+      <li><strong>Vendor:</strong> <%= @purchase_order.vendor.name %></li>
+      <li><strong>Total Amount:</strong> <%= number_to_currency(@purchase_order.total_amount) %></li>
+      <li><strong>Expected Delivery:</strong> <%= @purchase_order.expected_delivery_date.strftime("%B %d, %Y") %></li>
+    </ul>
+
+    <h3>Items:</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+      <thead>
+        <tr>
+          <th>Product/Service</th>
+          <th>Description</th>
+          <th>Quantity</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @purchase_order.purchase_order_items.each do |item| %>
+          <tr>
+            <td><%= item.product_name %></td>
+            <td><%= item.description %></td>
+            <td align="center"><%= item.quantity %></td>
+            <td align="right"><%= number_to_currency(item.unit_price) %></td>
+            <td align="right"><%= number_to_currency(item.total_amount) %></td>
+          </tr>
+        <% end %>
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="4" align="right"><strong>Total:</strong></td>
+          <td align="right"><strong><%= number_to_currency(@purchase_order.total_amount) %></strong></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <p>
+      Please review and take appropriate action by clicking the link below:
+    </p>
+
+    <p>
+      <%= link_to 'View Purchase Order', @url %>
+    </p>
+
+    <p>
+      <small>This is an automated message. Please do not reply to this email.</small>
+    </p>
+  </body>
+</html> 
