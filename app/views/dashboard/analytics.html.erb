@@ -1,0 +1,123 @@
+<div class="card mb-4">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Analytics Dashboard</h5>
+  </div>
+  <div class="card-body">
+    <%= form_tag dashboard_analytics_path, method: :get, class: 'row g-3 align-items-center mb-4' do %>
+      <div class="col-auto">
+        <label class="form-label">Date Range:</label>
+      </div>
+      <div class="col-auto">
+        <%= date_field_tag :start_date, @start_date, class: 'form-control' %>
+      </div>
+      <div class="col-auto">
+        <span class="form-text">to</span>
+      </div>
+      <div class="col-auto">
+        <%= date_field_tag :end_date, @end_date, class: 'form-control' %>
+      </div>
+      <div class="col-auto">
+        <%= submit_tag 'Apply', class: 'btn btn-primary' %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Procurement Trends</h5>
+      </div>
+      <div class="card-body">
+        <%= line_chart @procurement_trends,
+            title: "Monthly Procurement Amount",
+            min: 0,
+            thousands: ",",
+            prefix: "$",
+            colors: ["#0d6efd"] %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Category-wise Spending</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @category_spending,
+            title: "Spending by Category",
+            thousands: ",",
+            prefix: "$",
+            colors: ["#0d6efd", "#6610f2", "#6f42c1", "#d63384", "#dc3545"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Vendor Performance Ratings</h5>
+      </div>
+      <div class="card-body">
+        <%= bar_chart @vendor_performance.transform_keys { |k| Vendor.find(k).name },
+            title: "Average Vendor Ratings",
+            min: 0,
+            max: 5,
+            decimal: 1,
+            colors: ["#198754"] %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Delivery Performance</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @delivery_performance.transform_keys(&:titleize),
+            title: "Delivery Status Distribution",
+            colors: ["#198754", "#dc3545"] %>
+        <div class="mt-3">
+          <% total_deliveries = @delivery_performance.values.sum %>
+          <% on_time_percentage = (@delivery_performance['on_time'].to_f / total_deliveries * 100).round(1) %>
+          <p class="text-center">
+            On-time Delivery Rate: <strong><%= on_time_percentage %>%</strong>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Key Metrics</h5>
+      </div>
+      <div class="card-body">
+        <div class="row text-center">
+          <div class="col-md-3">
+            <h3><%= number_to_currency(@procurement_trends.values.sum) %></h3>
+            <p class="text-muted">Total Procurement</p>
+          </div>
+          <div class="col-md-3">
+            <h3><%= @vendor_performance.count %></h3>
+            <p class="text-muted">Active Vendors</p>
+          </div>
+          <div class="col-md-3">
+            <h3><%= @delivery_performance.values.sum %></h3>
+            <p class="text-muted">Total Deliveries</p>
+          </div>
+          <div class="col-md-3">
+            <h3><%= @category_spending.keys.count %></h3>
+            <p class="text-muted">Product Categories</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

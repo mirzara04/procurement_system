@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
+  </head>
+  <body>
+    <h1>Purchase Order Approved</h1>
+    
+    <p>
+      Your purchase order (#<%= @purchase_order.po_number %>) has been approved by <%= @approver.name %>.
+    </p>
+
+    <h2>Purchase Order Details:</h2>
+    <ul>
+      <li><strong>Vendor:</strong> <%= @purchase_order.vendor.name %></li>
+      <li><strong>Total Amount:</strong> <%= number_to_currency(@purchase_order.total_amount) %></li>
+      <li><strong>Expected Delivery:</strong> <%= @purchase_order.expected_delivery_date.strftime("%B %d, %Y") %></li>
+      <li><strong>Approved At:</strong> <%= @purchase_order.approved_at.strftime("%B %d, %Y %H:%M") %></li>
+    </ul>
+
+    <p>
+      The purchase order will now be sent to the vendor for processing.
+    </p>
+
+    <p>
+      You can view the purchase order details by clicking the link below:
+    </p>
+
+    <p>
+      <%= link_to 'View Purchase Order', @url %>
+    </p>
+
+    <p>
+      <small>This is an automated message. Please do not reply to this email.</small>
+    </p>
+  </body>
+</html> 
