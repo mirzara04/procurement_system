@@ -1,22 +1,37 @@
 class DashboardController < ApplicationController
   def index
-    @pending_orders = PurchaseOrder.pending_approval.limit(5)
-    @recent_orders = PurchaseOrder.order(created_at: :desc).limit(5)
-    @vendor_count = Vendor.active.count
-    @total_spend = PurchaseOrder.approved.sum(:total_amount)
-    
-    # Monthly spending chart data
-    @monthly_spending = PurchaseOrder.approved
-      .group_by_month(:created_at, last: 12)
-      .sum(:total_amount)
+    begin
+      @pending_orders = PurchaseOrder.pending_approval.limit(5)
+      @recent_orders = PurchaseOrder.order(created_at: :desc).limit(5)
+      @vendor_count = Vendor.active_vendors.count
+      @total_spend = PurchaseOrder.approved.sum(:total_amount)
+      
+      # Monthly spending chart data
+      @monthly_spending = if PurchaseOrder.approved.any?
+        PurchaseOrder.approved
+          .group_by_month(:created_at, last: 12)
+          .sum(:total_amount)
+      else
+        {}
+      end
 
-    # Top vendors by spend
-    @top_vendors = Vendor.joins(:purchase_orders)
-      .where(purchase_orders: { status: :approved })
-      .group('vendors.id')
-      .select('vendors.*, SUM(purchase_orders.total_amount) as total_spend')
-      .order('total_spend DESC')
-      .limit(5)
+      # Top vendors by spend
+      @top_vendors = Vendor.joins(:purchase_orders)
+        .where(purchase_orders: { status: :approved })
+        .group('vendors.id')
+        .select('vendors.*, SUM(purchase_orders.total_amount) as total_spend')
+        .order('total_spend DESC')
+        .limit(5)
+    rescue => e
+      # Handle any errors gracefully
+      logger.error "Dashboard error: #{e.message}"
+      @pending_orders = []
+      @recent_orders = []
+      @vendor_count = 0
+      @total_spend = 0
+      @monthly_spending = {}
+      @top_vendors = []
+    end
   end
 
   def analytics

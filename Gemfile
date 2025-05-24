@@ -1,5 +1,5 @@
 source "https://rubygems.org"
-ruby "3.3.0"
+ruby "3.3.8"
 
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
 gem "rails", "~> 8.0.2"
@@ -11,6 +11,10 @@ gem "pg", "~> 1.1"
 gem "puma", "~> 6.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
 gem "importmap-rails"
+# Bundle and process CSS [https://github.com/rails/cssbundling-rails]
+# gem "cssbundling-rails"
+# Bundle and transpile JavaScript [https://github.com/rails/jsbundling-rails]
+# gem "jsbundling-rails"
 # Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
 gem "turbo-rails"
 # Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
@@ -43,7 +47,7 @@ gem "thruster", require: false
 
 # Added gems for procurement system
 gem "devise", "~> 4.9" # Authentication
-gem "bootstrap", "~> 5.3" # Styling
+# gem "bootstrap", "~> 5.3" # Styling
 gem "sassc-rails" # For Bootstrap
 gem "simple_form" # For easier form handling
 gem "pundit" # Authorization
@@ -53,6 +57,7 @@ gem "paper_trail" # Audit trail
 gem "chartkick" # For charts and graphs
 gem "groupdate" # For time-based grouping
 gem "active_storage_validations" # For file attachments
+gem "aasm" # For state machines
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

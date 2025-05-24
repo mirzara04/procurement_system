@@ -1,0 +1,16 @@
+/* Custom styles */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.footer {
+  margin-top: auto;
+}
+
+/* Alert styles */
+.alert {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+} 

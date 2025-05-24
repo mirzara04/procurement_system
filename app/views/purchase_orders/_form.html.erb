@@ -1,60 +1,60 @@
-<%%= form_with(model: purchase_order, local: true) do |f| %>
-  <%% if purchase_order.errors.any? %>
+<%= form_with(model: purchase_order, local: true, data: { controller: 'purchase-order' }) do |f| %>
+  <% if purchase_order.errors.any? %>
     <div class="alert alert-danger">
-      <h5><%%= pluralize(purchase_order.errors.count, "error") %> prohibited this purchase order from being saved:</h5>
+      <h5><%= pluralize(purchase_order.errors.count, "error") %> prohibited this purchase order from being saved:</h5>
       <ul>
-        <%% purchase_order.errors.full_messages.each do |msg| %>
-          <li><%%= msg %></li>
-        <%% end %>
+        <% purchase_order.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
       </ul>
     </div>
-  <%% end %>
+  <% end %>
 
   <div class="card">
     <div class="card-header">
-      <h5 class="card-title mb-0"><%%= purchase_order.new_record? ? 'New Purchase Order' : "Edit Purchase Order ##{purchase_order.po_number}" %></h5>
+      <h5 class="card-title mb-0"><%= purchase_order.new_record? ? 'New Purchase Order' : "Edit Purchase Order ##{purchase_order.po_number}" %></h5>
     </div>
     <div class="card-body">
       <div class="row g-3">
         <div class="col-md-6">
           <div class="mb-3">
-            <%%= f.label :vendor_id, class: 'form-label required' %>
-            <%%= f.collection_select :vendor_id, Vendor.active, :id, :name, 
+            <%= f.label :vendor_id, class: 'form-label required' %>
+            <%= f.collection_select :vendor_id, Vendor.active, :id, :name, 
                 { prompt: 'Select Vendor' }, 
                 { class: 'form-select', required: true } %>
           </div>
 
           <div class="mb-3">
-            <%%= f.label :expected_delivery_date, class: 'form-label required' %>
-            <%%= f.date_field :expected_delivery_date, class: 'form-control', required: true %>
+            <%= f.label :expected_delivery_date, class: 'form-label required' %>
+            <%= f.date_field :expected_delivery_date, class: 'form-control', required: true %>
           </div>
 
           <div class="mb-3">
-            <%%= f.label :shipping_address, class: 'form-label required' %>
-            <%%= f.text_area :shipping_address, rows: 3, class: 'form-control', required: true %>
+            <%= f.label :shipping_address, class: 'form-label required' %>
+            <%= f.text_area :shipping_address, rows: 3, class: 'form-control', required: true %>
           </div>
         </div>
 
         <div class="col-md-6">
           <div class="mb-3">
-            <%%= f.label :payment_terms, class: 'form-label' %>
-            <%%= f.select :payment_terms, 
+            <%= f.label :payment_terms, class: 'form-label' %>
+            <%= f.select :payment_terms, 
                 PurchaseOrder::PAYMENT_TERMS,
                 { prompt: 'Select Payment Terms' }, 
                 { class: 'form-select' } %>
           </div>
 
           <div class="mb-3">
-            <%%= f.label :currency, class: 'form-label' %>
-            <%%= f.select :currency, 
+            <%= f.label :currency, class: 'form-label' %>
+            <%= f.select :currency, 
                 PurchaseOrder::CURRENCIES,
                 { selected: 'USD' }, 
                 { class: 'form-select' } %>
           </div>
 
           <div class="mb-3">
-            <%%= f.label :notes, class: 'form-label' %>
-            <%%= f.text_area :notes, rows: 3, class: 'form-control' %>
+            <%= f.label :notes, class: 'form-label' %>
+            <%= f.text_area :notes, rows: 3, class: 'form-control' %>
           </div>
         </div>
       </div>
@@ -74,74 +74,53 @@
               </tr>
             </thead>
             <tbody id="items-tbody">
-              <%%= f.fields_for :purchase_order_items do |item| %>
-                <%%= render 'purchase_order_item_fields', f: item %>
-              <%% end %>
+              <%= f.fields_for :purchase_order_items do |item| %>
+                <%= render 'purchase_order_item_fields', f: item %>
+              <% end %>
             </tbody>
           </table>
-          <%%= link_to_add_association 'Add Item', f, :purchase_order_items,
+          <%= link_to_add_association 'Add Item', f, :purchase_order_items,
               class: 'btn btn-outline-primary',
-              data: { association_insertion_node: '#items-tbody',
-                     association_insertion_method: 'append' } %>
+              data: { 
+                association_insertion_node: '#items-tbody',
+                association_insertion_method: 'append',
+                action: 'click->purchase-order#updateGrandTotal'
+              } %>
         </div>
       </div>
 
-      <%% if current_user.approver? && !purchase_order.new_record? %>
+      <% if current_user.approver? && !purchase_order.new_record? %>
         <div class="mt-4">
           <div class="mb-3">
-            <%%= f.label :status, class: 'form-label' %>
-            <%%= f.select :status, 
-                PurchaseOrder.statuses.keys.map { |s| [s.titleize, s] },
+            <%= f.label :status, class: 'form-label' %>
+            <%= f.select :status, 
+                PurchaseOrder.aasm.states.map { |s| [s.name.to_s.titleize, s.name] },
                 {}, 
                 { class: 'form-select' } %>
           </div>
         </div>
-      <%% end %>
+      <% end %>
     </div>
-    <div class="card-footer text-end">
+    
+    <div class="card-footer">
       <div class="d-flex justify-content-between align-items-center">
         <h4 class="mb-0">
-          Total: <span id="po-total"><%%= number_to_currency(purchase_order.total_amount) %></span>
+          Total: <span data-purchase-order-target="grandTotal"><%= number_to_currency(purchase_order.total_amount) %></span>
         </h4>
         <div>
-          <%%= link_to 'Cancel', purchase_orders_path, class: 'btn btn-secondary' %>
-          <%%= f.submit class: 'btn btn-primary' %>
+          <%= link_to 'Cancel', purchase_orders_path, class: 'btn btn-secondary' %>
+          <%= f.submit class: 'btn btn-primary' %>
         </div>
       </div>
     </div>
   </div>
-<%% end %>
+<% end %>
 
-<%% content_for :head do %>
+<% content_for :head do %>
   <style>
     .required:after {
       content: " *";
       color: red;
     }
   </style>
-<%% end %>
-
-<%% content_for :javascript do %>
-  <script>
-    document.addEventListener('turbo:load', function() {
-      function updateTotal() {
-        let total = 0;
-        document.querySelectorAll('.item-row').forEach(function(row) {
-          const quantity = parseFloat(row.querySelector('.quantity-field').value) || 0;
-          const price = parseFloat(row.querySelector('.price-field').value) || 0;
-          total += quantity * price;
-        });
-        document.getElementById('po-total').textContent = new Intl.NumberFormat('en-US', {
-          style: 'currency',
-          currency: 'USD'
-        }).format(total);
-      }
-
-      document.addEventListener('change', function(e) {
-        if (e.target.matches('.quantity-field, .price-field')) {
-          updateTotal();
-        }
-      });
-    });
-  </script>
-<%% end %> 
+<% end %> 

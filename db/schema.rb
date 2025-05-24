@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_15_165212) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_21_230803) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -57,8 +57,45 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_15_165212) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "admin"
+    t.boolean "approver"
+    t.string "name"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "vendor_documents", force: :cascade do |t|
+    t.bigint "vendor_id", null: false
+    t.string "document_type"
+    t.string "document_number"
+    t.date "issue_date"
+    t.date "expiry_date"
+    t.text "description"
+    t.string "status"
+    t.bigint "uploaded_by_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["document_number"], name: "index_vendor_documents_on_document_number"
+    t.index ["status"], name: "index_vendor_documents_on_status"
+    t.index ["uploaded_by_id"], name: "index_vendor_documents_on_uploaded_by_id"
+    t.index ["vendor_id", "document_type"], name: "index_vendor_documents_on_vendor_id_and_document_type"
+    t.index ["vendor_id"], name: "index_vendor_documents_on_vendor_id"
+  end
+
+  create_table "vendor_ratings", force: :cascade do |t|
+    t.bigint "vendor_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "purchase_order_id", null: false
+    t.integer "rating", null: false
+    t.text "comment"
+    t.string "category"
+    t.datetime "rating_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["purchase_order_id"], name: "index_vendor_ratings_on_purchase_order_id"
+    t.index ["user_id"], name: "index_vendor_ratings_on_user_id"
+    t.index ["vendor_id", "purchase_order_id"], name: "index_vendor_ratings_on_vendor_id_and_purchase_order_id", unique: true
+    t.index ["vendor_id"], name: "index_vendor_ratings_on_vendor_id"
   end
 
   create_table "vendors", force: :cascade do |t|
@@ -74,4 +111,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_15_165212) do
   add_foreign_key "purchase_order_items", "products"
   add_foreign_key "purchase_order_items", "purchase_orders"
   add_foreign_key "purchase_orders", "vendors"
+  add_foreign_key "vendor_documents", "users", column: "uploaded_by_id"
+  add_foreign_key "vendor_documents", "vendors"
+  add_foreign_key "vendor_ratings", "purchase_orders"
+  add_foreign_key "vendor_ratings", "users"
+  add_foreign_key "vendor_ratings", "vendors"
 end

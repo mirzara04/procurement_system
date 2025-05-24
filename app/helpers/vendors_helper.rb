@@ -10,7 +10,7 @@ module VendorsHelper
     when 'pending_approval'
       'warning'
     else
-      'primary'
+      'secondary'
     end
   end
 
@@ -67,6 +67,21 @@ module VendorsHelper
       'bi-shield-check'
     else
       'bi-file-earmark'
+    end
+  end
+
+  def vendor_rating_badge(rating)
+    return 'N/A' unless rating
+
+    color = case rating.round
+            when 5 then 'success'
+            when 4 then 'info'
+            when 3 then 'warning'
+            else 'danger'
+            end
+
+    content_tag :span, class: "badge bg-#{color}" do
+      "#{rating.round(1)} ★"
     end
   end
 end 
