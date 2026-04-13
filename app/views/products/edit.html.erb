@@ -1,0 +1,14 @@
+<% content_for :title, "Edit #{@product.name}" %>
+
+<div class="row">
+  <div class="col-12">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="mb-0">Edit Product</h4>
+      <%= link_to product_path(@product), class: 'btn btn-outline-secondary' do %>
+        <i class="bi bi-arrow-left"></i> Back to Product
+      <% end %>
+    </div>
+
+    <%= render 'form', product: @product %>
+  </div>
+</div> 

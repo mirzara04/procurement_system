@@ -1,0 +1,59 @@
+<% content_for :title, 'Pending Approvals' %>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Purchase Orders Pending Approval</h5>
+    <span class="badge bg-warning fs-6"><%= @purchase_orders.total_count %> pending</span>
+  </div>
+  <div class="card-body">
+    <% if @purchase_orders.empty? %>
+      <div class="text-center py-5 text-muted">
+        <i class="bi bi-check-circle fs-1"></i>
+        <p class="mt-2">No purchase orders pending approval.</p>
+      </div>
+    <% else %>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>PO Number</th>
+              <th>Vendor</th>
+              <th>Requested By</th>
+              <th>Amount</th>
+              <th>Expected Delivery</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @purchase_orders.each do |po| %>
+              <tr>
+                <td><%= link_to po.po_number, purchase_order_path(po) %></td>
+                <td><%= po.vendor.name %></td>
+                <td><%= po.created_by.name %></td>
+                <td><%= number_to_currency(po.total_amount) %></td>
+                <td><%= po.expected_delivery_date&.strftime("%b %d, %Y") %></td>
+                <td><%= po.updated_at.strftime("%b %d, %Y") %></td>
+                <td>
+                  <div class="btn-group">
+                    <%= link_to 'View', purchase_order_path(po), class: 'btn btn-sm btn-info' %>
+                    <% if policy(po).approve? %>
+                      <%= button_to 'Approve', approve_purchase_order_path(po),
+                          method: :patch, class: 'btn btn-sm btn-success' %>
+                      <%= button_to 'Reject', reject_purchase_order_path(po),
+                          method: :patch, class: 'btn btn-sm btn-danger',
+                          data: { confirm: 'Reject this purchase order?' } %>
+                    <% end %>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <div class="d-flex justify-content-center mt-3">
+        <%= paginate @purchase_orders %>
+      </div>
+    <% end %>
+  </div>
+</div>

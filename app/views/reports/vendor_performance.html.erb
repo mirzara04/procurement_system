@@ -1,0 +1,124 @@
+<% content_for :title, "Vendor Performance: #{@vendor.name}" %>
+
+<div class="row mb-4">
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Vendor Performance Overview</h5>
+        <%= link_to vendor_path(@vendor), class: 'btn btn-primary' do %>
+          <i class="bi bi-arrow-left"></i> Back to Vendor
+        <% end %>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-6">
+            <dl class="row">
+              <dt class="col-sm-4">Name</dt>
+              <dd class="col-sm-8"><%= @vendor.name %></dd>
+
+              <dt class="col-sm-4">Status</dt>
+              <dd class="col-sm-8">
+                <span class="badge bg-<%= vendor_status_color(@vendor.status) %>">
+                  <%= @vendor.status.titleize %>
+                </span>
+              </dd>
+
+              <dt class="col-sm-4">Total Orders</dt>
+              <dd class="col-sm-8"><%= @vendor.purchase_orders.count %></dd>
+
+              <dt class="col-sm-4">Total Spend</dt>
+              <dd class="col-sm-8">
+                <%= number_to_currency(@vendor.purchase_orders.sum(:total_amount)) %>
+              </dd>
+            </dl>
+          </div>
+          <div class="col-md-6">
+            <dl class="row">
+              <dt class="col-sm-4">Average Rating</dt>
+              <dd class="col-sm-8">
+                <%= render_star_rating(@vendor.average_rating) %>
+                (<%= @vendor.average_rating.round(1) %>)
+              </dd>
+
+              <dt class="col-sm-4">Total Ratings</dt>
+              <dd class="col-sm-8"><%= @vendor.vendor_ratings.count %></dd>
+
+              <dt class="col-sm-4">On-Time Delivery</dt>
+              <dd class="col-sm-8">
+                <% total_deliveries = @delivery_performance.values.sum %>
+                <% if total_deliveries > 0 %>
+                  <%= number_to_percentage(
+                    (@delivery_performance['on_time'].to_f / total_deliveries) * 100,
+                    precision: 1
+                  ) %>
+                <% else %>
+                  N/A
+                <% end %>
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Ratings by Category</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @ratings_by_category,
+            donut: true,
+            legend: "right",
+            suffix: "/5" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Orders</h5>
+      </div>
+      <div class="card-body">
+        <%= column_chart @monthly_orders,
+            colors: ["#0d6efd"] %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Spend</h5>
+      </div>
+      <div class="card-body">
+        <%= line_chart @monthly_spend,
+            min: 0,
+            thousands: ",",
+            prefix: "$",
+            points: false,
+            colors: ["#198754"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Delivery Performance</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @delivery_performance,
+            colors: ["#198754", "#dc3545"],
+            donut: true,
+            legend: "right" %>
+      </div>
+    </div>
+  </div>
+</div> 

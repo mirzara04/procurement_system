@@ -26,7 +26,8 @@ Rails.application.routes.draw do
       patch :submit_for_approval
       patch :approve
       patch :reject
-      patch :mark_as_received
+      patch :cancel
+      patch :mark_as_delivered
       get :print
     end
     collection do
@@ -43,11 +44,13 @@ Rails.application.routes.draw do
   end
 
   # Reports
-  namespace :reports do
-    get 'vendor_performance'
-    get 'procurement_analytics'
-    get 'spending_analysis'
-    get 'delivery_performance'
+  resources :reports, only: [:index] do
+    collection do
+      get :vendor_performance
+      get :procurement_analytics
+      get :spending_analysis
+      get :delivery_performance
+    end
   end
 
   # API endpoints for dynamic updates

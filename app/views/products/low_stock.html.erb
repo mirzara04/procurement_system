@@ -1,0 +1,68 @@
+<% content_for :title, 'Low Stock Products' %>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Low Stock Products</h5>
+    <div>
+      <%= link_to products_path, class: 'btn btn-outline-secondary' do %>
+        <i class="bi bi-arrow-left"></i> Back to Products
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>Name</th>
+            <th>Vendor</th>
+            <th class="text-end">Unit Price</th>
+            <th class="text-center">Current Stock</th>
+            <th class="text-center">Reorder Point</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @products.each do |product| %>
+            <tr>
+              <td><%= product.sku %></td>
+              <td><%= link_to product.name, product_path(product) %></td>
+              <td><%= link_to product.vendor.name, vendor_path(product.vendor) if product.vendor %></td>
+              <td class="text-end"><%= number_to_currency(product.unit_price) %></td>
+              <td class="text-center">
+                <%= product.current_stock %>
+                <span class="badge bg-warning">Low Stock</span>
+              </td>
+              <td class="text-center"><%= product.reorder_point %></td>
+              <td>
+                <div class="btn-group">
+                  <%= link_to product_path(product), class: 'btn btn-sm btn-info', title: 'View' do %>
+                    <i class="bi bi-eye"></i>
+                  <% end %>
+                  
+                  <% if policy(product).edit? %>
+                    <%= link_to edit_product_path(product), class: 'btn btn-sm btn-primary', title: 'Edit' do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <% if @products.empty? %>
+      <div class="text-center py-4">
+        <p class="text-muted mb-0">No products are currently low in stock.</p>
+      </div>
+    <% end %>
+
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @products %>
+    </div>
+  </div>
+</div> 

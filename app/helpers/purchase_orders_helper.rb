@@ -1,21 +1,32 @@
 module PurchaseOrdersHelper
   def po_status_color(status)
-    case status
-    when 'draft'
-      'secondary'
-    when 'pending_approval'
-      'warning'
-    when 'approved'
-      'info'
-    when 'in_progress'
-      'primary'
-    when 'delivered'
-      'success'
-    when 'cancelled'
-      'danger'
-    else
-      'secondary'
+    case status&.to_sym
+    when :draft then 'secondary'
+    when :pending_approval then 'warning'
+    when :approved then 'success'
+    when :in_progress then 'primary'
+    when :rejected then 'danger'
+    when :cancelled then 'dark'
+    when :delivered then 'info'
+    else 'secondary'
     end
+  end
+
+  def order_status_color(status)
+    case status&.to_sym
+    when :draft then 'secondary'
+    when :pending_approval then 'warning'
+    when :approved then 'success'
+    when :rejected then 'danger'
+    when :cancelled then 'dark'
+    when :delivered then 'info'
+    else 'secondary'
+    end
+  end
+
+  def format_status(status)
+    return 'Draft' if status.nil?
+    status.to_s.humanize
   end
 
   def po_version_event(version)
@@ -25,12 +36,12 @@ module PurchaseOrdersHelper
     when 'update'
       changes = version.changeset.keys
       if changes.include?('status')
-        "Status Changed to #{version.changeset['status'].last.titleize}"
+        "Status Changed to #{format_status(version.changeset['status'].last)}"
       else
         "Purchase Order Updated"
       end
     else
-      version.event.titleize
+      version.event.humanize
     end
   end
 
@@ -43,7 +54,7 @@ module PurchaseOrdersHelper
       
       case attribute
       when 'status'
-        changes << "Status changed from #{old_value&.titleize || 'none'} to #{new_value.titleize}"
+        changes << "Status changed from #{format_status(old_value) || 'none'} to #{format_status(new_value)}"
       when 'total_amount'
         changes << "Total amount changed from #{number_to_currency(old_value)} to #{number_to_currency(new_value)}"
       when 'expected_delivery_date'
@@ -51,7 +62,7 @@ module PurchaseOrdersHelper
         new_date = new_value.to_date.strftime("%b %d, %Y")
         changes << "Expected delivery date changed from #{old_date || 'none'} to #{new_date}"
       else
-        changes << "#{attribute.titleize} was updated"
+        changes << "#{attribute.humanize} was updated"
       end
     end
     

@@ -1,0 +1,101 @@
+<% content_for :title, 'Delivery Performance' %>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Delivery Performance Dashboard</h5>
+        <%= link_to reports_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-arrow-left"></i> Back to Reports
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Overall Delivery Performance</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @overall_delivery,
+            donut: true,
+            legend: "right",
+            colors: ["#198754", "#ffc107", "#dc3545"] %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Delivery Performance</h5>
+      </div>
+      <div class="card-body">
+        <%= line_chart @monthly_delivery,
+            stacked: true,
+            colors: ["#198754", "#dc3545"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Delivery Performance by Order Value</h5>
+      </div>
+      <div class="card-body">
+        <%= column_chart @delivery_by_value,
+            stacked: true,
+            colors: ["#198754", "#dc3545"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Top 10 Vendors with Delivery Delays</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Vendor</th>
+                <th>Status</th>
+                <th>Total Orders</th>
+                <th>Average Delay (Days)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @vendor_delays.each do |vendor| %>
+                <tr>
+                  <td><%= link_to vendor.name, vendor_path(vendor) %></td>
+                  <td>
+                    <span class="badge bg-<%= vendor_status_color(vendor.status) %>">
+                      <%= vendor.status.titleize %>
+                    </span>
+                  </td>
+                  <td><%= vendor.purchase_orders.count %></td>
+                  <td><%= number_with_precision(vendor.avg_delay_days, precision: 1) %></td>
+                  <td>
+                    <%= link_to 'View Performance', vendor_performance_reports_path(vendor_id: vendor.id),
+                        class: 'btn btn-sm btn-outline-primary' %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

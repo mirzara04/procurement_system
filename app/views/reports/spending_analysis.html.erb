@@ -1,0 +1,147 @@
+<% content_for :title, 'Spending Analysis' %>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Spending Analysis Dashboard</h5>
+        <%= link_to reports_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-arrow-left"></i> Back to Reports
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Current Month Budget Utilization</h5>
+      </div>
+      <div class="card-body text-center">
+        <h2 class="display-4 mb-0">
+          <%= number_to_currency(@budget_utilization) %>
+        </h2>
+        <p class="text-muted">Month to Date Spending</p>
+        <div class="progress" style="height: 20px;">
+          <% utilization_percentage = (@budget_utilization / 100000.0) * 100 # Example monthly budget of $100,000 %>
+          <div class="progress-bar <%= utilization_percentage > 80 ? 'bg-danger' : 'bg-success' %>"
+               role="progressbar"
+               style="width: <%= [utilization_percentage, 100].min %>%"
+               aria-valuenow="<%= utilization_percentage %>"
+               aria-valuemin="0"
+               aria-valuemax="100">
+            <%= number_to_percentage(utilization_percentage, precision: 1) %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Spending Trends</h5>
+      </div>
+      <div class="card-body">
+        <%= line_chart @monthly_spending,
+            min: 0,
+            thousands: ",",
+            prefix: "$",
+            points: false,
+            colors: ["#0d6efd"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Department-wise Spending</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @department_spend,
+            donut: true,
+            legend: "right",
+            thousands: ",",
+            prefix: "$" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Spending by Expense Category</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @expense_categories = PurchaseOrderItem.group(:expense_category).sum(:total_amount),
+            donut: true,
+            legend: "right",
+            thousands: ",",
+            prefix: "$" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Year-over-Year Comparison</h5>
+      </div>
+      <div class="card-body">
+        <%= column_chart @yearly_comparison,
+            thousands: ",",
+            prefix: "$",
+            colors: ["#0d6efd", "#198754"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Top Spenders</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Total Spend</th>
+                <th>Orders</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @top_spenders.each do |user| %>
+                <tr>
+                  <td><%= user.name %></td>
+                  <td><%= user.department || 'N/A' %></td>
+                  <td>
+                    <% if user.admin? %>Admin
+                    <% elsif user.approver? %>Approver
+                    <% elsif user.procurement_officer? %>Procurement Officer
+                    <% else %>User
+                    <% end %>
+                  </td>
+                  <td><%= number_to_currency(user.total_spend) %></td>
+                  <td><%= user.created_purchase_orders.count %></td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

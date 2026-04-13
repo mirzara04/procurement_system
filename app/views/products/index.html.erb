@@ -1,0 +1,116 @@
+<% content_for :title, 'Products' %>
+
+<div class="card">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="card-title mb-0">Products</h5>
+    <div>
+      <% if policy(Product).low_stock? %>
+        <%= link_to low_stock_products_path, class: 'btn btn-warning me-2' do %>
+          <i class="bi bi-exclamation-triangle"></i> Low Stock
+        <% end %>
+      <% end %>
+      <% if policy(Product.new).create? %>
+        <%= link_to new_product_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-plus"></i> New Product
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <%= search_form_for @q, class: 'mb-4' do |f| %>
+      <div class="row g-3">
+        <div class="col-md-3">
+          <%= f.label :name_or_sku_cont, 'Name/SKU Contains', class: 'form-label' %>
+          <%= f.search_field :name_or_sku_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-3">
+          <%= f.label :vendor_name_cont, 'Vendor Name Contains', class: 'form-label' %>
+          <%= f.search_field :vendor_name_cont, class: 'form-control' %>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :status_eq, 'Status', class: 'form-label' %>
+          <%= f.select :status_eq, 
+              Product.statuses.map { |k, v| [k.titleize, k] },
+              { include_blank: 'All' }, 
+              class: 'form-select' %>
+        </div>
+        <div class="col-md-2">
+          <%= f.label :category_eq, 'Category', class: 'form-label' %>
+          <%= f.select :category_eq,
+              Product.categories.map { |k, v| [k.titleize, k] },
+              { include_blank: 'All' },
+              class: 'form-select' %>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <%= f.submit 'Search', class: 'btn btn-primary me-2' %>
+          <%= link_to 'Clear', products_path, class: 'btn btn-secondary' %>
+        </div>
+      </div>
+    <% end %>
+
+    <div class="table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th><%= sort_link(@q, :sku, 'SKU') %></th>
+            <th><%= sort_link(@q, :name, 'Name') %></th>
+            <th><%= sort_link(@q, :vendor_name, 'Vendor') %></th>
+            <th><%= sort_link(@q, :unit_price, 'Unit Price') %></th>
+            <th><%= sort_link(@q, :current_stock, 'Stock') %></th>
+            <th><%= sort_link(@q, :status, 'Status') %></th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @products.each do |product| %>
+            <tr class="<%= 'table-warning' if product.current_stock <= product.reorder_point %>">
+              <td><%= product.sku %></td>
+              <td><%= link_to product.name, product_path(product) %></td>
+              <td><%= link_to product.vendor.name, vendor_path(product.vendor) if product.vendor %></td>
+              <td><%= number_to_currency(product.unit_price) %></td>
+              <td>
+                <%= product.current_stock %>
+                <% if product.current_stock <= product.reorder_point %>
+                  <span class="badge bg-warning">Low Stock</span>
+                <% end %>
+              </td>
+              <td>
+                <span class="badge bg-<%= product_status_color(product.status) %>">
+                  <%= product.status.present? %>
+                </span>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <%= link_to product_path(product), class: 'btn btn-sm btn-info', title: 'View' do %>
+                    <i class="bi bi-eye"></i>
+                  <% end %>
+                  
+                  <% if policy(product).edit? %>
+                    <%= link_to edit_product_path(product), class: 'btn btn-sm btn-primary', title: 'Edit' do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                  <% end %>
+
+                  <% if policy(product).destroy? %>
+                    <%= button_to product_path(product), 
+                        method: :delete, 
+                        class: 'btn btn-sm btn-danger',
+                        title: 'Delete',
+                        form: { data: { turbo_confirm: 'Are you sure?' } } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-center mt-4">
+      <%= paginate @products %>
+    </div>
+  </div>
+</div> 

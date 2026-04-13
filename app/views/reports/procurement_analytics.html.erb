@@ -1,0 +1,113 @@
+<% content_for :title, 'Procurement Analytics' %>
+
+<div class="row mb-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">Procurement Analytics Dashboard</h5>
+        <%= link_to reports_path, class: 'btn btn-primary' do %>
+          <i class="bi bi-arrow-left"></i> Back to Reports
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Category-wise Spending</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @category_spend,
+            donut: true,
+            legend: "right",
+            thousands: ",",
+            prefix: "$" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Monthly Order Trends by Status</h5>
+      </div>
+      <div class="card-body">
+        <%= line_chart @monthly_order_trends,
+            stacked: true,
+            colors: ["#0d6efd", "#198754", "#dc3545"] %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Order Value Distribution</h5>
+      </div>
+      <div class="card-body">
+        <%= pie_chart @order_value_distribution,
+            donut: true,
+            legend: "right" %>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Processing Time</h5>
+      </div>
+      <div class="card-body text-center">
+        <h2 class="display-4 mb-0">
+          <%= number_with_precision(@avg_processing_time, precision: 1) %>
+        </h2>
+        <p class="text-muted">Average Days to Approve</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <h5 class="card-title mb-0">Top Ordered Products</h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Category</th>
+                <th>Total Ordered</th>
+                <th>Current Stock</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @top_products.each do |product| %>
+                <tr>
+                  <td><%= link_to product.name, product_path(product) %></td>
+                  <td><%= product.category&.titleize || 'N/A' %></td>
+                  <td><%= product.total_ordered %></td>
+                  <td><%= product.current_stock %></td>
+                  <td>
+                    <span class="badge bg-<%= product_status_color(product.status) %>">
+                      <%= product.status&.titleize || 'Unknown' %>
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

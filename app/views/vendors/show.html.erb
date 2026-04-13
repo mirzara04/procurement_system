@@ -43,8 +43,8 @@
           </div>
           <div class="col-md-6">
             <dl class="row">
-              <dt class="col-sm-4">Tax Number</dt>
-              <dd class="col-sm-8"><%= @vendor.tax_number %></dd>
+              <dt class="col-sm-4">Tax ID</dt>
+              <dd class="col-sm-8"><%= @vendor.tax_id %></dd>
 
               <dt class="col-sm-4">Contact Person</dt>
               <dd class="col-sm-8"><%= @vendor.contact_person %></dd>
@@ -150,8 +150,8 @@
                     </span>
                   </td>
                   <td>
-                    <% if order.actual_delivery_date %>
-                      <%= order.actual_delivery_date.strftime("%b %d, %Y") %>
+                    <% if order.delivery_date %>
+                      <%= order.delivery_date.strftime("%b %d, %Y") %>
                     <% else %>
                       Expected: <%= order.expected_delivery_date&.strftime("%b %d, %Y") %>
                     <% end %>

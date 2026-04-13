@@ -22,6 +22,7 @@ class PurchaseOrderPolicy < ApplicationPolicy
     return true if record.created_by_id == user.id && record.draft?
     false
   end
+  
 
   def edit?
     update?
@@ -71,6 +72,10 @@ class PurchaseOrderPolicy < ApplicationPolicy
     show?
   end
 
+  def pending_approval?
+    index? # or use your own logic, e.g., user.admin? or user.approver?
+  end
+
   class Scope < Scope
     def resolve
       if user.admin? || user.approver?
@@ -80,4 +85,4 @@ class PurchaseOrderPolicy < ApplicationPolicy
       end
     end
   end
-end 
+end

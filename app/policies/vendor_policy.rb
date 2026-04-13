@@ -1,35 +1,19 @@
 class VendorPolicy < ApplicationPolicy
-  def index?
-    true
-  end
+  def index? = true
 
-  def show?
-    true
-  end
+  def show? = true
 
-  def create?
-    admin? || procurement_officer?
-  end
+  def create? = admin? || procurement_officer?
 
-  def update?
-    admin? || procurement_officer?
-  end
+  def update? = admin? || procurement_officer?
 
-  def destroy?
-    admin?
-  end
+  def destroy? = admin?
 
-  def approve?
-    admin? || approver?
-  end
+  def approve? = admin? || approver?
 
-  def blacklist?
-    admin?
-  end
+  def blacklist? = admin?
 
-  def performance?
-    admin? || procurement_officer? || approver?
-  end
+  def performance? = admin? || procurement_officer? || approver?
 
   class Scope < Scope
     def resolve

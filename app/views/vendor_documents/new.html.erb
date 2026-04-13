@@ -1,0 +1,58 @@
+<% content_for :title, 'Upload Document' %>
+
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title mb-0">Upload Vendor Document</h5>
+  </div>
+  <div class="card-body">
+    <%= form_with model: [@vendor, @document], local: true do |f| %>
+      <% if @document.errors.any? %>
+        <div class="alert alert-danger">
+          <ul class="mb-0">
+            <% @document.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="mb-3">
+        <%= f.label :document_type, class: 'form-label' %>
+        <%= f.select :document_type,
+            VendorDocument.document_types.keys.map { |t| [t.titleize, t] },
+            { include_blank: 'Select type' }, class: 'form-select' %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :document_number, class: 'form-label' %>
+        <%= f.text_field :document_number, class: 'form-control' %>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <%= f.label :issue_date, class: 'form-label' %>
+          <%= f.date_field :issue_date, class: 'form-control' %>
+        </div>
+        <div class="col-md-6 mb-3">
+          <%= f.label :expiry_date, class: 'form-label' %>
+          <%= f.date_field :expiry_date, class: 'form-control' %>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :file, class: 'form-label' %>
+        <%= f.file_field :file, class: 'form-control', accept: '.pdf,.doc,.docx,.jpg,.jpeg,.png' %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :notes, class: 'form-label' %>
+        <%= f.text_area :notes, class: 'form-control', rows: 3 %>
+      </div>
+
+      <div class="d-flex gap-2">
+        <%= f.submit 'Upload Document', class: 'btn btn-primary' %>
+        <%= link_to 'Cancel', vendor_path(@vendor), class: 'btn btn-secondary' %>
+      </div>
+    <% end %>
+  </div>
+</div>

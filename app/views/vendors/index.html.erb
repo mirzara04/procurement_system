@@ -1,3 +1,5 @@
+<% content_for :title, 'Vendors' %>
+
 <div class="card">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h5 class="card-title mb-0">Vendors</h5>
@@ -19,12 +21,14 @@
         </div>
         <div class="col-md-2">
           <%= f.label :status_eq, 'Status', class: 'form-label' %>
-          <%= f.select :status_eq, Vendor.statuses.map { |k, v| [k.titleize, v] },
-                      { include_blank: 'All' }, class: 'form-select' %>
+          <%= f.select :status_eq, 
+              Vendor.statuses.map { |k, v| [format_vendor_status(k), k] },
+              { include_blank: 'All' }, 
+              class: 'form-select' %>
         </div>
         <div class="col-md-2">
-          <%= f.label :tax_number_cont, 'Tax Number', class: 'form-label' %>
-          <%= f.search_field :tax_number_cont, class: 'form-control' %>
+          <%= f.label :tax_id_cont, 'Tax ID', class: 'form-label' %>
+          <%= f.search_field :tax_id_cont, class: 'form-control' %>
         </div>
         <div class="col-md-2 d-flex align-items-end">
           <%= f.submit 'Search', class: 'btn btn-primary me-2' %>
@@ -54,16 +58,25 @@
               <td><%= vendor.phone %></td>
               <td>
                 <span class="badge bg-<%= vendor_status_color(vendor.status) %>">
-                  <%= vendor.status.titleize %>
+                  <%= format_vendor_status(vendor.status) %>
                 </span>
               </td>
               <td>
-                <div class="d-flex align-items-center">
-                  <%= render_star_rating(vendor.average_rating) %>
-                  <small class="ms-1 text-muted">
-                    (<%= vendor.vendor_ratings.count %>)
-                  </small>
-                </div>
+                <% begin %>
+                  <% if vendor.vendor_ratings.loaded? && vendor.vendor_ratings.any? %>
+                    <div class="d-flex align-items-center">
+                      <%= render_star_rating(vendor.average_rating) %>
+                      <small class="ms-1 text-muted">
+                        (<%= vendor.vendor_ratings.count %>)
+                      </small>
+                    </div>
+                  <% else %>
+                    <span class="text-muted">No ratings</span>
+                  <% end %>
+                <% rescue => e %>
+                  <% logger.error "Error displaying vendor ratings: #{e.message}" %>
+                  <span class="text-muted">Rating unavailable</span>
+                <% end %>
               </td>
               <td>
                 <%= vendor.purchase_orders.count %>
@@ -71,15 +84,24 @@
               </td>
               <td>
                 <div class="btn-group">
-                  <%= link_to 'View', vendor_path(vendor), class: 'btn btn-sm btn-info' %>
-                  <% if policy(vendor).edit? %>
-                    <%= link_to 'Edit', edit_vendor_path(vendor), class: 'btn btn-sm btn-primary' %>
+                  <%= link_to vendor_path(vendor), class: 'btn btn-sm btn-info', title: 'View' do %>
+                    <i class="bi bi-eye"></i>
                   <% end %>
+                  
+                  <% if policy(vendor).edit? %>
+                    <%= link_to edit_vendor_path(vendor), class: 'btn btn-sm btn-primary', title: 'Edit' do %>
+                      <i class="bi bi-pencil"></i>
+                    <% end %>
+                  <% end %>
+
                   <% if policy(vendor).destroy? %>
-                    <%= button_to 'Delete', vendor_path(vendor), 
+                    <%= button_to vendor_path(vendor), 
                         method: :delete, 
                         class: 'btn btn-sm btn-danger',
-                        data: { confirm: 'Are you sure?' } %>
+                        title: 'Delete',
+                        form: { data: { turbo_confirm: 'Are you sure?' } } do %>
+                      <i class="bi bi-trash"></i>
+                    <% end %>
                   <% end %>
                 </div>
               </td>
@@ -89,7 +111,7 @@
       </table>
     </div>
 
-    <div class="d-flex justify-content-center">
+    <div class="d-flex justify-content-center mt-4">
       <%= paginate @vendors %>
     </div>
   </div>

@@ -1,6 +1,6 @@
 class PurchaseOrdersController < ApplicationController
-  before_action :set_purchase_order, except: [:index, :new, :create]
-  before_action :authorize_purchase_order, except: [:index, :new, :create]
+  before_action :set_purchase_order, except: [:index, :new, :create, :pending_approval]
+  before_action :authorize_purchase_order, except: [:index, :new, :create, :pending_approval]
 
   def index
     @q = PurchaseOrder.ransack(params[:q])
@@ -8,6 +8,14 @@ class PurchaseOrdersController < ApplicationController
     @purchase_orders = @q.result.includes(:vendor, :created_by)
                         .page(params[:page]).per(20)
     authorize @purchase_orders
+  end
+
+  def pending_approval
+    @purchase_orders = PurchaseOrder.pending_approval
+                                    .includes(:vendor, :created_by)
+                                    .order(created_at: :desc)
+                                    .page(params[:page]).per(20)
+    authorize @purchase_orders, :index?
   end
 
   def show
@@ -108,7 +116,7 @@ class PurchaseOrdersController < ApplicationController
       :vendor_id, :expected_delivery_date, :shipping_address,
       :payment_terms, :currency, :notes, :status,
       purchase_order_items_attributes: [
-        :id, :product_name, :description, :quantity, :unit_price, :_destroy
+        :id, :product_id, :description, :quantity, :unit_price, :_destroy
       ]
     )
   end
